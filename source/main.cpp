@@ -1,9 +1,38 @@
 #define TESLA_INIT_IMPL // If you have more than one file using the tesla header, only define this in the main one
 #include <tesla.hpp>    // The Tesla Header
 
+static Service g_sfdnsresSrv;
+
+class GuiSecondary : public tsl::Gui {
+public:
+    GuiSecondary() {}
+
+    virtual tsl::elm::Element* createUI() override {
+        auto *rootFrame = new tsl::elm::OverlayFrame("Tesla Example", "v1.3.2 - Secondary Gui");
+
+        rootFrame->setContent(new tsl::elm::DebugRectangle(tsl::Color{ 0x8, 0x3, 0x8, 0xF }));
+
+        return rootFrame;
+    }
+};
+
 
 class GuiTest : public tsl::Gui {
 public:
+    static bool OnItemClick(u64 keys) {
+        if(keys & HidNpadButton_A) {
+            smGetService(&g_sfdnsresSrv, "sfdnsres");
+            serviceDispatch(&g_sfdnsresSrv, 65000);
+            serviceClose(&g_sfdnsresSrv);
+            
+            tsl::changeTo<GuiSecondary>();
+
+            return true;
+        }
+        return false;
+    }
+
+
     GuiTest() { }
 
     // Called when this Gui gets loaded to create the UI
@@ -11,13 +40,17 @@ public:
     virtual tsl::elm::Element* createUI() override {
         // A OverlayFrame is the base element every overlay consists of. This will draw the default Title and Subtitle.
         // If you need more information in the header or want to change it's look, use a HeaderOverlayFrame.
-        auto frame = new tsl::elm::OverlayFrame("Tesla Example", "v1.3.1");
+        auto frame = new tsl::elm::OverlayFrame("DNS-MITM Reload", "v0.0.1");
 
         // A list that can contain sub elements and handles scrolling
         auto list = new tsl::elm::List();
 
+        list->addItem(new tsl::elm::CategoryHeader("Send Commands to DNS-MITM:"));
+
         // Create and add a new list item to the list
-        list->addItem(new tsl::elm::ListItem("Default List Item"));
+        auto item = new tsl::elm::ListItem("Click to Reload hosts File");
+        item->setClickListener(std::bind(&GuiTest::OnItemClick, std::placeholders::_1));
+        list->addItem(item);
 
         // Add the list to the frame for it to be drawn
         frame->setContent(list);
@@ -32,7 +65,7 @@ public:
     }
 
     // Called once every frame to handle inputs not handled by other UI elements
-    virtual bool handleInput(u64 keysDown, u64 keysHeld, touchPosition touchInput, JoystickPosition leftJoyStick, JoystickPosition rightJoyStick) override {
+    virtual bool handleInput(u64 keysDown, u64 keysHeld, const HidTouchState &touchPos, HidAnalogStickState joyStickPosLeft, HidAnalogStickState joyStickPosRight) override {
         return false;   // Return true here to singal the inputs have been consumed
     }
 };
