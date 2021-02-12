@@ -37,8 +37,13 @@ include $(DEVKITPRO)/libnx/switch_rules
 #   of a homebrew executable (.nro). This is intended to be used for sysmodules.
 #   NACP building is skipped as well.
 #---------------------------------------------------------------------------------
+<<<<<<< HEAD
 APP_TITLE	:=	DNS-MITM Reload
 APP_VERSION :=	0.0.1
+=======
+APP_TITLE	:=	Tesla Overlay Template
+APP_VERSION :=	1.0.0
+>>>>>>> 566bd2013f00919d6536eb6fa46dba310a30225c
 
 TARGET		:=	$(notdir $(CURDIR))
 BUILD		:=	build
