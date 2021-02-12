@@ -5,12 +5,22 @@ static Service g_sfdnsresSrv;
 
 class GuiSecondary : public tsl::Gui {
 public:
-    GuiSecondary() {}
+
+    Result g_arg1;
+    Result g_arg2;
+
+    GuiSecondary(Result arg1, Result arg2) {
+        g_arg1 = arg1;
+        g_arg2 = arg2;
+    }
 
     virtual tsl::elm::Element* createUI() override {
-        auto *rootFrame = new tsl::elm::OverlayFrame("Tesla Example", "v1.3.2 - Secondary Gui");
+        auto rootFrame = new tsl::elm::OverlayFrame("Tesla Example", "v1.3.2 - Secondary Gui");
 
-        rootFrame->setContent(new tsl::elm::DebugRectangle(tsl::Color{ 0x8, 0x3, 0x8, 0xF }));
+        auto newlist = new tsl::elm::List();
+        newlist->addItem(new tsl::elm::ListItem("rc1 = " + std::to_string(g_arg1) ));
+        newlist->addItem(new tsl::elm::ListItem("rc2 = " + std::to_string(g_arg2) ));
+        rootFrame->setContent(newlist);
 
         return rootFrame;
     }
@@ -21,11 +31,23 @@ class GuiTest : public tsl::Gui {
 public:
     static bool OnItemClick(u64 keys) {
         if(keys & HidNpadButton_A) {
-            smGetService(&g_sfdnsresSrv, "sfdnsres");
-            serviceDispatch(&g_sfdnsresSrv, 65000);
-            serviceClose(&g_sfdnsresSrv);
+            Result rc1 = 0;
+            Result rc2 = 0;
+
+            printf("\n\nStarting Reload.\n");
+
+            rc1 = smGetService(&g_sfdnsresSrv, "sfdnsres");
+            printf("smGetService: %d\n", rc1);
             
-            tsl::changeTo<GuiSecondary>();
+            rc2 = serviceDispatch(&g_sfdnsresSrv, 65000);
+            printf("serviceDispatch: %d\n", rc2);
+            
+            serviceClose(&g_sfdnsresSrv);
+            printf("serviceClosed");
+            
+            printf("\n\nDNS MITM hosts file reloaded.\n");
+            tsl::changeTo<GuiSecondary>(rc1, rc2);
+
 
             return true;
         }
