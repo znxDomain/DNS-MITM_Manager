@@ -1,6 +1,8 @@
 #include "hostsFileEditor.hpp"
 #include <sstream>      // std::stringstream, std::stringbuf
-
+#include <iostream>
+#include <string>
+ 
 constexpr const char *const amsHostsPath = "/atmosphere/hosts";
 static char pathBuffer[FS_MAX_PATH];
 
@@ -18,9 +20,47 @@ I'm going to:
   -delete original file
 */
 
+int writes = 0;
+const char* g_arg1;
+void HostsFileEditor::saveFile() {
+
+    std::string hostsData;
+    hostsData += std::__cxx11::to_string(writes);
+    hostsData += "\n";
+    if (this->he_fileEditorListItems.size() != 0) {
+        for (const auto &hEntry : this->he_fileEditorListItems) {
+            if(hEntry.listItem->getState()){
+                hostsData += hEntry.listItem->getText();
+            } else {
+                hostsData += ";";
+                hostsData += hEntry.listItem->getText();
+            }
+        }
+    }
+
+    Result rc = fsOpenSdCardFileSystem(&this->he_fs);
+    if (R_FAILED(rc))
+        return;
+
+    FsFile hostsFile;
+    std::snprintf(pathBuffer, FS_MAX_PATH, "/atmosphere/hosts/%s","sysmmc.txt");
+    rc = fsFsOpenFile(&this->he_fs, pathBuffer, FsOpenMode_Write, &hostsFile);
+    if (R_FAILED(rc))
+        return;
+    tsl::hlp::ScopeGuard fileGuard([&] { fsFileClose(&hostsFile); });
+
+    /* Write hosts file. */
+    rc = fsFileWrite(&hostsFile, 0, hostsData.data(), hostsData.size(), FsWriteOption_Flush);
+    if (R_FAILED(rc))
+        return;
+
+    writes += 1;
+    return;
+}
 
 
 HostsFileEditor::HostsFileEditor(const char* fileName) {
+    g_arg1 = fileName;
     Result rc = fsOpenSdCardFileSystem(&this->he_fs);
     if (R_FAILED(rc))
         return;
@@ -39,8 +79,6 @@ HostsFileEditor::HostsFileEditor(const char* fileName) {
         return;
 
     /* Read hosts file. */
-    std::string hostsData(size, '\0');
-    u64 bytesRead;
     rc = fsFileRead(&hostsFile, 0, hostsData.data(), size, FsReadOption_None, &bytesRead);
     if (R_FAILED(rc))
         return;
@@ -59,13 +97,18 @@ HostsFileEditor::HostsFileEditor(const char* fileName) {
         // Stuff that won't be displayed, and can't be changed:
         // - everything else
         tsl::elm::Element *item = NULL;
+        tsl::elm::ToggleListItem *tmp = NULL;
         if (line.size() > 1){
             switch (line[0]){
                 case '0'...'9':
-                    item = new tsl::elm::ToggleListItem(line, true);
+                    tmp = new tsl::elm::ToggleListItem(line, true);
+                    tmp->setClickListener(HostsFileEditor::saveFile())
+                    item = tmp;
                     break;
                 case ';':
-                    item = new tsl::elm::ToggleListItem(line.substr(1, line.size() - 1), false);
+                    tmp = new tsl::elm::ToggleListItem(line.substr(1, line.size() - 1), false);
+                    tmp->setClickListener(HostsFileEditor::saveFile())
+                    item = tmp;
                     break;
                 case '#':
                     item = new tsl::elm::CategoryHeader(line.substr(1, line.size() - 1));
@@ -78,13 +121,7 @@ HostsFileEditor::HostsFileEditor(const char* fileName) {
             .raw = line,
         };
 
-        // hEntry.listItem->setClickListener([this, hEntry](u64 click) -> bool {
-        //     if (click & HidNpadButton_A) {
-        //         // toggle
-        //         return true;
-        //     }
-        //     return false;
-        // });
+        // hEntry.listItem->setClickListener()
         this->he_fileEditorListItems.push_back(std::move(hEntry));
         count += 1;
     }
@@ -95,8 +132,9 @@ HostsFileEditor::~HostsFileEditor() {
     fsFsClose(&this->he_fs);
 }
 
+
 tsl::elm::Element *HostsFileEditor::createUI() {
-    tsl::elm::OverlayFrame *rootFrame = new tsl::elm::OverlayFrame("Toggle Hosts Entries:","Reload will occur on exit.");
+    tsl::elm::OverlayFrame *rootFrame = new tsl::elm::OverlayFrame("Toggle Hosts Entries:",g_arg1);
 
     if (this->he_fileEditorListItems.size() == 0) {
         const char *description = this->he_scanned ? "No entries found in file!" : "File scan failed!";

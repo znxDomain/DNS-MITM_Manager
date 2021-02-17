@@ -14,6 +14,7 @@ class HostsFileEditor : public tsl::Gui {
     FsFileSystem he_fs;
     std::list<HostsEntry> he_fileEditorListItems;
     bool he_scanned;
+    void saveFile();
 
   public:
     HostsFileEditor(const char* fileName);
