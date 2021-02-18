@@ -22,7 +22,7 @@ I'm going to:
 
 int writes = 0;
 const char* g_arg1;
-void HostsFileEditor::saveFile() {
+bool HostsFileEditor::saveFile(u64 keys) {
 
     std::string hostsData;
     hostsData += std::__cxx11::to_string(writes);
@@ -40,22 +40,22 @@ void HostsFileEditor::saveFile() {
 
     Result rc = fsOpenSdCardFileSystem(&this->he_fs);
     if (R_FAILED(rc))
-        return;
+        return true;
 
     FsFile hostsFile;
     std::snprintf(pathBuffer, FS_MAX_PATH, "/atmosphere/hosts/%s","sysmmc.txt");
     rc = fsFsOpenFile(&this->he_fs, pathBuffer, FsOpenMode_Write, &hostsFile);
     if (R_FAILED(rc))
-        return;
+        return true;
     tsl::hlp::ScopeGuard fileGuard([&] { fsFileClose(&hostsFile); });
 
     /* Write hosts file. */
     rc = fsFileWrite(&hostsFile, 0, hostsData.data(), hostsData.size(), FsWriteOption_Flush);
     if (R_FAILED(rc))
-        return;
+        return true;
 
     writes += 1;
-    return;
+    return false;
 }
 
 
@@ -79,6 +79,8 @@ HostsFileEditor::HostsFileEditor(const char* fileName) {
         return;
 
     /* Read hosts file. */
+    std::string hostsData(size, '\0');
+    u64 bytesRead;
     rc = fsFileRead(&hostsFile, 0, hostsData.data(), size, FsReadOption_None, &bytesRead);
     if (R_FAILED(rc))
         return;
@@ -96,27 +98,26 @@ HostsFileEditor::HostsFileEditor(const char* fileName) {
         // - lines that start with a ;
         // Stuff that won't be displayed, and can't be changed:
         // - everything else
-        tsl::elm::Element *item = NULL;
-        tsl::elm::ToggleListItem *tmp = NULL;
+        tsl::elm::ToggleListItem *item = NULL;
+        tsl::elm::CategoryHeader *item2 = NULL;
         if (line.size() > 1){
             switch (line[0]){
                 case '0'...'9':
-                    tmp = new tsl::elm::ToggleListItem(line, true);
-                    tmp->setClickListener(HostsFileEditor::saveFile())
-                    item = tmp;
+                    item = new tsl::elm::ToggleListItem(line, true);
+                    item->setClickListener(HostsFileEditor::saveFile)
                     break;
                 case ';':
-                    tmp = new tsl::elm::ToggleListItem(line.substr(1, line.size() - 1), false);
-                    tmp->setClickListener(HostsFileEditor::saveFile())
-                    item = tmp;
+                    item = new tsl::elm::ToggleListItem(line.substr(1, line.size() - 1), false);
+                    item->setClickListener(HostsFileEditor::saveFile)
                     break;
                 case '#':
-                    item = new tsl::elm::CategoryHeader(line.substr(1, line.size() - 1));
+                    item2 = new tsl::elm::CategoryHeader(line.substr(1, line.size() - 1));
                     break;  
             }
         }
         HostsEntry hEntry = {
             .listItem = item,
+            .categoryItem = item2,
             .lineNum = count,
             .raw = line,
         };

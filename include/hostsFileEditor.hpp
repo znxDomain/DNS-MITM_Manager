@@ -4,7 +4,8 @@
 #include <list>
 
 struct HostsEntry {
-    tsl::elm::Element *listItem;
+    tsl::elm::ToggleListItem *listItem ;
+    tsl::elm::CategoryHeader *categoryItem;
     int lineNum;
     std::string raw;
 };
@@ -14,7 +15,7 @@ class HostsFileEditor : public tsl::Gui {
     FsFileSystem he_fs;
     std::list<HostsEntry> he_fileEditorListItems;
     bool he_scanned;
-    void saveFile();
+    bool saveFile(u64 keys);
 
   public:
     HostsFileEditor(const char* fileName);
