@@ -26,7 +26,7 @@ HostsFileSelector::HostsFileSelector() {
 
         hFile.listItem->setClickListener([this, hFile](u64 click) -> bool {
             if (click & HidNpadButton_A) {
-                tsl::changeTo<HostsFileEditor>(entry.name);
+                tsl::changeTo<HostsFileEditor>(hFile.fileName);
                 return true;
             }
             return false;

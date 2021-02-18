@@ -3,8 +3,11 @@
 
 #include <list>
 
+bool saveFile(u64 keys);
+
 struct HostsEntry {
-    tsl::elm::Element *listItem;
+    tsl::elm::ToggleListItem *listItem;
+    tsl::elm::CategoryHeader *headerItem;
     int lineNum;
     std::string raw;
 };
@@ -12,9 +15,7 @@ struct HostsEntry {
 class HostsFileEditor : public tsl::Gui {
   private:
     FsFileSystem he_fs;
-    std::list<HostsEntry> he_fileEditorListItems;
     bool he_scanned;
-    void saveFile();
 
   public:
     HostsFileEditor(const char* fileName);
