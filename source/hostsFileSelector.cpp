@@ -2,8 +2,7 @@
 #include "hostsFileEditor.hpp"
 #include "dir_iterator.hpp"
 
-constexpr const char *const amsHostsPath = "/atmosphere/hosts";
-static char pathBuffer[FS_MAX_PATH];
+static char pathBuffer2[FS_MAX_PATH];
 
 HostsFileSelector::HostsFileSelector() {
     Result rc = fsOpenSdCardFileSystem(&this->hf_fs);
@@ -11,8 +10,8 @@ HostsFileSelector::HostsFileSelector() {
         return;
 
     FsDir hostsDir;
-    std::strcpy(pathBuffer, amsHostsPath);
-    rc = fsFsOpenDirectory(&this->hf_fs, pathBuffer, FsDirOpenMode_ReadFiles, &hostsDir);
+    std::strcpy(pathBuffer2, amsHostsPath);
+    rc = fsFsOpenDirectory(&this->hf_fs, pathBuffer2, FsDirOpenMode_ReadFiles, &hostsDir);
     if (R_FAILED(rc))
         return;
     tsl::hlp::ScopeGuard dirGuard([&] { fsDirClose(&hostsDir); });
@@ -24,7 +23,7 @@ HostsFileSelector::HostsFileSelector() {
             .fileName = entry.name,
         };
 
-        hFile.listItem->setClickListener([this, hFile](u64 click) -> bool {
+        hFile.listItem->setClickListener([this, hFile, entry](u64 click) -> bool {
             if (click & HidNpadButton_A) {
                 tsl::changeTo<HostsFileEditor>(entry.name);
                 return true;
