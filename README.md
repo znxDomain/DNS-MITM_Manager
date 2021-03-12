@@ -9,3 +9,5 @@ If the line starts with a digit, it is expected to be an IP address and toggleab
 Toggling is performed by prepending or removing a `;`.
 
 All other lines are simply ignored.
+
+Hosts files are reloaded in DNS MITM each time the overlay is hidden. 
