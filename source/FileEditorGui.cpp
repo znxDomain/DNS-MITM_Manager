@@ -11,7 +11,7 @@ FileEditorGui::FileEditorGui(const std::basic_string<char> &current_sub_folder_)
 
 tsl::elm::Element *FileEditorGui::createUI() {
 
-  _frame_ = new tsl::elm::OverlayFrame("DNS-MITM Manager", _current_sub_folder_);
+  _frame_ = new tsl::elm::OverlayFrame(GlobalObjects::_version_name_, _current_sub_folder_);
   _list_ = new tsl::elm::List();
 
   GlobalObjects::set_hosts_file(_current_sub_folder_);

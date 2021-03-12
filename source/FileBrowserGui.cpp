@@ -12,7 +12,7 @@ FileBrowserGui::FileBrowserGui() {
 tsl::elm::Element *FileBrowserGui::createUI() {
 // A OverlayFrame is the base element every overlay consists of. This will draw the default Title and Subtitle.
 // If you need more information in the header or want to change it's look, use a HeaderOverlayFrame.
-  _frame_ = new tsl::elm::OverlayFrame("DNS-MITM Manager", "v0.0.2");
+  _frame_ = new tsl::elm::OverlayFrame(GlobalObjects::_version_name_, GlobalObjects::_version_str_);
 
 // A list that can contain sub elements and handles scrolling
   _list_ = new tsl::elm::List();
