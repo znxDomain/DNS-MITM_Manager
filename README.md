@@ -13,4 +13,5 @@ All other lines are simply ignored.
 Hosts files are reloaded in DNS MITM each time the overlay is hidden. 
 
 See Atmosphere [docs here](https://github.com/Atmosphere-NX/Atmosphere/blob/master/docs/features/dns_mitm.md) for details on the function DNS MITM.
-See Tesla components [here](https://github.com/WerWolv/Tesla-Menu) and [here](https://github.com/WerWolv/nx-ovlloader) for install Tesla.
+
+See Tesla components [here](https://github.com/WerWolv/Tesla-Menu) and [here](https://github.com/WerWolv/nx-ovlloader) for installing Tesla.
