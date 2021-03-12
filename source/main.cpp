@@ -1,33 +1,40 @@
-#define TESLA_INIT_IMPL
-#include "hostsFileSelector.hpp"
+#define TESLA_INIT_IMPL // If you have more than one file using the tesla header, only define this in the main one
+#include <tesla.hpp>    // The Tesla Header
 
-class MainOverlay : public tsl::Overlay {
-  public:
-    MainOverlay() {}
-    ~MainOverlay() {}
-                                           // libtesla already initialized fs, hid, pl, pmdmnt, hid:sys and set:sys
-    virtual void initServices() override {}  // Called at the start to initialize all services necessary for this Overlay
-    virtual void exitServices() override {}  // Callet at the end to clean up all services previously initialized
+#include <GlobalObjects.h>
+#include <FileBrowserGui.h>
 
-    virtual void onShow() override {}    // Called before overlay wants to change from invisible to visible state
-    virtual void onHide() override {     // Called before overlay wants to change from visible to invisible state
-        Result rc1;
-        Result rc2;
-        static Service sfdnsresSrv;
 
-        // Call sfdnsres service to reload hosts file
-        tsl::hlp::doWithSmSession([&]{
-            rc1 = smGetService(&sfdnsresSrv, "sfdnsres");
-            rc2 = serviceDispatch(&sfdnsresSrv, 65000);
-            serviceClose(&sfdnsresSrv);
-        });
-    }
+class DnsMitmManagerOverlay : public tsl::Overlay {
+public:
 
-    virtual std::unique_ptr<tsl::Gui> loadInitialGui() override {
-        return initially<HostsFileSelector>();  // Initial Gui to load.
-    }
+  // libtesla already initialized fs, hid, pl, pmdmnt, hid:sys and set:sys
+  void initServices() override {
+
+  }  // Called at the start
+
+  void exitServices() override {
+
+  }  // Callet at the end to clean up all services previously initialized
+
+  void onShow() override {}    // Called before overlay wants to change from invisible to visible state
+  void onHide() override {     // Called before overlay wants to change from visible to invisible state
+    static Service sfdnsresSrv;
+
+    // Call sfdnsres service to reload hosts file
+    tsl::hlp::doWithSmSession([&]{
+      smGetService(&sfdnsresSrv, "sfdnsres");
+      serviceDispatch(&sfdnsresSrv, 65000);
+      serviceClose(&sfdnsresSrv);
+    });
+  }
+
+  std::unique_ptr<tsl::Gui> loadInitialGui() override {
+    return initially<FileBrowserGui>();  // Initial Gui to load. It's possible to pass arguments to it's constructor like this
+  }
 };
 
+
 int main(int argc, char **argv) {
-    return tsl::loop<MainOverlay>(argc, argv);
+  return tsl::loop<DnsMitmManagerOverlay>(argc, argv);
 }
