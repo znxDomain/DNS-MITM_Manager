@@ -38,7 +38,7 @@ include $(DEVKITPRO)/libnx/switch_rules
 #   NACP building is skipped as well.
 #---------------------------------------------------------------------------------
 APP_TITLE	:=	DNS-MITM Manager
-APP_VERSION :=	0.1.0
+APP_VERSION :=	0.2.0
 
 TARGET		:=	$(notdir $(CURDIR))
 BUILD		:=	build
