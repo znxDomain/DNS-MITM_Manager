@@ -4,7 +4,7 @@
 
 namespace GlobalObjects {
   static std::string _version_name_ = "DNS-MITM Manager";
-  static std::string _version_str_ = "v0.1.0";
+  static std::string _version_str_ = "v0.1.1";
 
   static std::string _hosts_file_ = "";
 
@@ -18,6 +18,7 @@ namespace GlobalObjects {
 
   void toggle_entry(int index, bool state);
   void save_file();
+  void reload_sfdnsres();
 
   void LogLine(const char* fmt, ...);
 

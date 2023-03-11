@@ -9,7 +9,7 @@
 #include <sys/types.h>
 #include <limits.h>
 
-#define ENABLE_LOGGING 0
+// #define ENABLE_LOGGING 1
 
 namespace GlobalObjects{
 
@@ -78,7 +78,19 @@ namespace GlobalObjects{
       _hosts_entries_list_[index].insert(0, 1, ';');
     }
     GlobalObjects::save_file();
+    GlobalObjects::reload_sfdnsres();
     return;
+  }
+
+  void reload_sfdnsres(){
+    static Service sfdnsresSrv;
+    Result rc = 0;
+    // Call sfdnsres service to reload hosts file
+    tsl::hlp::doWithSmSession([&]{
+      rc = smGetService(&sfdnsresSrv, "sfdnsres");
+      rc = serviceDispatch(&sfdnsresSrv, 65000);
+      serviceClose(&sfdnsresSrv);
+    });
   }
 
   void save_file(){    
